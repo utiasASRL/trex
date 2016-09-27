@@ -1,0 +1,16 @@
+Header header
+
+
+string operationMode
+
+float32 currentInclinationRadAvg
+float32 currentInclinationDegAvg
+float32 desiredTension
+float32 Kp_in
+float32 Kp_out
+float32 motorVoltCommand_fb
+
+float32 spoolRadius
+float32 motorVoltCommand_ff
+
+float32 motorVoltCommand

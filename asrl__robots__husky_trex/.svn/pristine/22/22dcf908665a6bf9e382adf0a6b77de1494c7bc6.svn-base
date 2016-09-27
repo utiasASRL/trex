@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<launch>
+  <!-- Clearpath adapter node -->
+  <node pkg="asrl__robots__husky_trex" type="asrl_husky_trex_node" name="vehicle" output="screen">
+    <!-- Base -->
+    <param name="~/base/command_timeout_seconds" value="0.25"/>
+    <param name="~/base/odometry_update_interval_seconds" value="0.1"/>
+    <param name="~/base/status_update_interval_seconds" value="1.0"/>
+    <param name="~/base/linear_max_speed_meters_per_second" value="0.135"/><!--was 0.2-->
+    <param name="~/base/angular_max_speed_rads_per_second" value="1.0"/><!--was 1.0-->
+    <!--<param name="~/base/linear_max_speed_meters_per_second" value="0.248"/>
+    <param name="~/base/angular_max_speed_rads_per_second" value="2.0"/> OLD VALUES-->
+    <param name="~/base/linear_to_angular_velocity_ratio_minimum" value="0.0"/>
+    <param name="~/base/vehicle_name" value="vehicle"/>
+    <param name="~/base/vehicle_base_frame_name" value="vehicle_base_link"/>
+    
+    <!-- asrl_clearpath -->
+    <param name="~/twist_output_period_in_s" value="0.1"/>
+    <param name="~/robot_half_width_in_m" value="0.245"/>
+    <param name="~/odometry_scaling_multiplier" value="1.11"/>
+    <param name="~/maximum_motor_temperature" value="60.0"/>
+    <param name="~/motor_cooldown_time" value="30.0"/>
+    <remap from="~/out/twist" to="clearpath/robots/vehicle/cmd_vel"/>
+    <remap from="~/in/encoders" to="clearpath/robots/vehicle/data/encoders"/>
+    <remap from="~/in/power_status" to="clearpath/robots/vehicle/data/power_status"/>
+    <remap from="~/in/safety_status" to="clearpath/robots/vehicle/data/safety_status"/>
+    <remap from="~/in/system_status" to="clearpath/robots/vehicle/data/system_status"/>
+  </node>
+
+  <!-- Clearpath node -->
+  <group ns="clearpath/robots/vehicle">
+    <node pkg="clearpath_base" type="kinematic_node" name="clearpath_base" output="screen">
+      <param name="port" value="/dev/ttyS0"/>
+      <param name="velocity_control" value="1"/>
+      <!-- Horizon data request frequencies -->
+      <param name="data/encoders" value="10"/>
+      <param name="data/power_status" value="10"/>
+      <param name="data/safety_status" value="10"/>
+      <param name="data/system_status" value="10" />
+      <param name="data/differential_output" value="10" />
+      <param name="data/differential_speed" value="10" />
+    </node>
+  </group>
+
+  <!-- Gamepad -->
+  <!--include file="$(find gamepad_control)/launch/gamepad_mid_js1.xml" /-->
+  <!-- Joy node -->
+  <node respawn="true" pkg="joy" type="joy_node" name="joy" >
+    <param name="dev" type="string" value="/dev/input/js0" />
+    <param name="deadzone" value="0.3" />
+    <param name="autorepeat_rate" type="double" value="10.0" />
+    <param name="coalesce_interval" value="0.1" />
+  </node>
+
+  <!-- Gamepad -->
+  <node pkg="asrl__robots__gamepad_control" type="gamepad_control_node" name="gamepad_control">
+    <remap from="gamepad_control/in/joy" to="joy"/>
+    <remap from="gamepad_control/out/twist" to="vehicle/in/twist"/>  
+    <param name="axis_linear_forward" value="4" type="int"/>
+    <param name="axis_linear_reverse" value="5" type="int"/>
+    <param name="deadman_button" value="0" type="int"/>
+    <param name="axis_angular" value="0" type="int"/>
+    <param name="scale_linear" value="0.5" type="double"/>
+    <param name="scale_angular" value="1.0" type="double"/>
+    <param name="~/base/linear_max_speed_meters_per_second" value="2.0"/>
+    <param name="~/base/angular_max_speed_rads_per_second" value="2.0"/>
+    <param name="~/base/linear_to_angular_velocity_ratio_minimum" value="0.0"/>
+  </node>
+
+
+  <!-- Robot configuration -->
+  <param name="robot_description" command="cat $(find asrl__robots__husky_trex)/launch/husky_climber_urdf.xml" />
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher" />
+  <!-- Broadcast TFs -->
+  <node name="tf_arm_broadcaster" pkg="asrl__robots__husky_trex" type="tf_arm_broadcaster.py" />
+  <node name="tf_pitch_broadcaster" pkg="asrl__robots__husky_trex" type="tf_pitch_broadcaster.py" />
+  <node name="tf_pulley_broadcaster" pkg="asrl__robots__husky_trex" type="tf_pulley_broadcaster.py" />
+  <node name="tf_spool_broadcaster" pkg="asrl__robots__husky_trex" type="tf_spool_broadcaster.py" />
+</launch>

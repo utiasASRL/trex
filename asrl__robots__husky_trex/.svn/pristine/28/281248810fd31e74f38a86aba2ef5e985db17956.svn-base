@@ -1,0 +1,386 @@
+<robot name="vehicle">
+
+  <!-- Note on rotations : goes in order r, p, y, but once r is computed everything resets so that the yaw roation is the aligned with the global z axes - yes this is super concusing but so is life -->
+
+  <!-- ======= Body (Arm Centric) ======= -->
+  <link name="vehicle_base_link" />
+  <!-- the name body_link is required -->
+  <link name="body_link">
+    <visual>
+      <origin xyz="0.0 0.0 0.0"/>
+      <geometry>
+        <box size="0.1 0.1 0.1" />
+      </geometry>
+      <material name="gray">
+	      <color rgba=".2 .2 .2 1" />
+      </material>
+    </visual> 
+  </link>
+
+  <joint name="base_body" type="fixed">
+    <parent link="vehicle_base_link"/>
+    <child link="body_link"/>
+    <origin xyz="0.0 0.0 0.4377" rpy="0.0 0.0 0.0" />
+    <axis xyz="1.0 0.0 0.0" />
+  </joint>
+
+  <!-- ======= Husky ======= -->
+  <link name="husky_link">
+    <visual>
+      <geometry>
+        <box size="0.55 0.42 0.26" /> <!--Actual Dim 0.82 0.42 0.26 -->
+      </geometry>
+      <material name="clearpath yellow">
+	      <color rgba="1.0 0.75 0.15 1.0"/>
+      </material>
+    </visual> 
+  </link>
+  
+  <!--If type is changed see tf_arm_broadcaster.py in scripts to change the publishing -->
+  <joint name="husky_to_body" type="fixed">
+    <parent link="body_link"/>
+    <child link="husky_link"/>
+    <origin xyz="0.0 0.0 -0.1827" rpy="0.0 0.0 0.0" />
+    <axis xyz="1.0 0.0 0.0" />
+  </joint>
+
+
+  <!-- ======= Bearing ======= -->
+  <link name="bearing_link">
+    <visual>
+      <geometry>
+        <cylinder radius="0.15" length=".1054" />
+      </geometry>
+      <material name="gray">
+	      <color rgba=".2 .2 .2 1" />
+      </material>
+    </visual>
+  </link>
+  <!--If type is changed see tf_arm_broadcaster.py in scripts to change the publishing -->
+  <joint name="body_to_bearing" type="continuous">
+    <parent link="body_link"/>
+    <child link="bearing_link"/>
+    <origin xyz="0 0 0" rpy="0 0 0" /> <!--publish rotation-->
+	<axis xyz="0 0 1" />
+  </joint>
+
+  <!-- ======= Arm ======= -->
+  <link name="arm_upper_link">
+    <visual>
+      <geometry>
+        <box size="0.3874 0.0762 0.0381" />
+      </geometry>
+      <material name="carbon">
+	      <color rgba="0.15 0.15 0.15 1.0" />
+      </material>
+    </visual>
+  </link>
+
+  <link name="arm_lower_link">
+    <visual>
+      <geometry>
+        <box size="0.3238 0.0762 0.0381" />
+      </geometry>
+      <material name="carbon">
+	      <color rgba="0.15 0.15 0.15 1.0" />
+      </material>
+    </visual>
+  </link>
+
+  <joint name="arm_to_bearing" type="fixed">
+    <parent link="bearing_link"/>
+    <child link="arm_upper_link"/>
+	<origin xyz="-0.1937 0.0 0.03365" rpy="0 0.0 0.0" />
+  </joint>
+
+  <joint name="arm_to_arm" type="fixed">
+    <parent link="arm_upper_link"/>
+    <child link="arm_lower_link"/>
+	<origin xyz="-0.322 0.0 -0.12" rpy="0 -0.785398163 0" />
+  </joint>
+
+  <!-- ======= Spool ======= -->
+  <link name="spool_link">
+    <visual>
+      <geometry>
+        <cylinder radius="0.175" length=".09" />
+      </geometry>
+      <material name="carbon">
+	      <color rgba="0.15 0.15 0.15 1.0" />
+      </material>
+    </visual>
+  </link>
+
+ <joint name="bearing_to_spool" type="continuous">
+    <parent link="bearing_link"/>
+    <child link="spool_link"/>
+    <origin xyz="0 0 .0977" rpy="0 0 0" /> <!--publish rotation-->
+	<axis xyz="0 0 1" />
+  </joint>
+
+  <!-- ======= Lidar Box ======= -->
+  <link name="lidar_box_link">
+    <visual>
+      <geometry>
+         <box size=".15 .15 .1" />
+      </geometry>
+      <material name="carbon">
+	      <color  rgba=".2 .2 .2 1" />
+      </material>
+    </visual>
+  </link>
+
+ <joint name="box_to_spool" type="fixed">
+    <parent link="spool_link"/>
+    <child link="lidar_box_link"/>
+    <origin xyz="0 0 0.095" rpy="0 0 0" />
+  </joint>
+
+  <!-- ======= Laser ======= -->
+  <link name="laser">
+    <visual>
+      <geometry>
+        <box size=".08 .08 .08" />
+      </geometry>
+      <material name="sick beige">
+	      <color rgba=".99 .86 .64 1" />
+      </material>
+    </visual>
+  </link>
+
+  <joint name="spool_to_laser" type="fixed">
+    <parent link="spool_link"/>
+    <child link="laser"/>
+    <origin xyz="0.04180 0 0.1924" rpy="3.14 -1.8326 0" /> 
+    <!-- Old Config <origin xyz="0.06881 0 0.1148" rpy="3.14 -1.57 0" />-->
+    <!-- New Calculated as (0.577+0.1508)−0.5354 == hieght to top spool + height of lidar above spool less current model height of the center of the spool object-->
+  </joint>
+
+  <!-- ======= Pulley ======= -->
+  <link name="pulley_link">
+    <visual>
+      <geometry>
+        <cylinder radius="0.03" length="0.0183" />
+      </geometry>
+      <material name="gray">
+	      <color rgba=".2 .2 .2 1" />
+      </material>
+    </visual>
+  </link>
+
+  <joint name="arm_to_pulley" type="continuous">
+    <parent link="arm_upper_link"/>
+    <child link="pulley_link"/>
+    <origin xyz="-0.0787 0 .05849" rpy="1.57 0 0" />
+	<axis xyz="0 0 1" />
+  </joint>
+
+  <!-- ======= Pitch ======= -->
+  <link name="pitch_link">
+    <visual>
+      <geometry>
+        <cylinder radius="0.019" length="0.0762" />
+      </geometry>
+      <material name="gray">
+	      <color rgba=".2 .2 .2 1" />
+      </material>
+    </visual>
+  </link>
+
+  <joint name="arm_to_pitch" type="continuous">
+    <parent link="arm_lower_link"/>
+    <child link="pitch_link"/>
+    <origin xyz="-0.19 0 0" rpy="1.57 3.93 0" />
+	<axis xyz="0 0 1" />
+  </joint>
+
+  <!-- ======= Camera / IMU ======= -->
+
+  <link name="mount_link"> <!-- CAM0 expects base_link TF-->
+    <visual>
+      <geometry>
+        <box size="0.03 0.03 0.03" />
+      </geometry>
+      <material name="gray">
+	      <color rgba=".2 .2 .2 1" />
+      </material>
+    </visual>
+  </link>
+
+  <link name="cam0"> <!-- CAM0 is left camera (-x direction) -->
+    <visual>
+      <geometry>
+        <box size="0.03 0.03 0.03" /> <!-- actual camera size<box size=".15 .082 .0423" /> -->
+      </geometry>
+      <material name="light blue">
+	      <color rgba="0 1 1 1" />
+      </material>
+    </visual>
+  </link>
+
+  <link name="imu0">
+    <visual>
+      <geometry>
+        <box size="0.03 0.03 0.03" /> <!-- actual camera size<box size=".15 .082 .0423" /> -->
+      </geometry>
+      <material name="purple">
+	      <color rgba="0.64 0 1 1" />
+      </material>
+    </visual>
+  </link>
+
+  <!-- position of camera mast pulley location -->
+  <joint name="mount_to_body" type="fixed">
+    <!-- Adjust camera roll 'r' (+ == down, - == up) -->
+    <parent link="husky_link"/>
+    <child link="mount_link"/>
+    <origin xyz="-0.285 0 .585" rpy="-1.868 0 1.5708" /><!-- currently 16deg declination-->
+        <axis xyz="0 0 1" />
+  </joint>
+
+  <!-- Bumblebee Left Cam to Mount-->
+  <!--joint name="camera_to_mount" type="fixed">
+    <parent link="mount_link"/>
+    <child link="cam0"/>
+    <origin xyz="-0.12 0 .075" rpy="0 0 0" />
+  </joint-->
+
+  <!-- Skybotix Cam0 (left) to Mount-->
+  <!-- Camera is flipped upside down ignore markings on circuit board -->
+  <joint name="camera_to_mount" type="fixed">
+    <parent link="mount_link"/>
+    <child link="cam0"/>
+    <origin xyz="0.067 0.011 0.055" rpy="0 0 3.14" />
+  </joint>
+  <!-- Skybotix IMU to Cam0 (left)-->
+  <!-- IMU pose is given by calibraion topic "camX/calibration, signs for position/orietation are reversed," -->
+  <joint name="imu_to_camera" type="fixed">
+    <parent link="cam0"/>
+    <child link="imu0"/>
+    <origin xyz="0.0479 -0.01698 0.02366" rpy="-3.14 3.14 0" /> 
+  </joint>
+
+
+  <!-- ======= USB CAMS ======= -->
+
+  <link name="usb_cam_back"> <!-- CAM0 is left camera (-x direction) -->
+    <visual>
+      <geometry>
+        <box size="0.03 0.03 0.03" /> <!-- actual camera size<box size=".15 .082 .0423" /> -->
+      </geometry>
+      <material name="back_red">
+	      <color rgba=".4 0 .1 1" />
+      </material>
+    </visual>
+  </link>
+
+  <link name="usb_cam_front"> <!-- CAM0 is left camera (-x direction) -->
+    <visual>
+      <geometry>
+        <box size="0.03 0.03 0.03" /> <!-- actual camera size<box size=".15 .082 .0423" /> -->
+      </geometry>
+      <material name="front_green">
+	      <color rgba="0 0.3 .1 1" />
+      </material>
+    </visual>
+  </link>
+
+  <joint name="usb_cam_back_to_husky" type="fixed">
+    <parent link="husky_link"/>
+    <child link="usb_cam_back"/>
+    <origin xyz="-0.33 .03 0.335" rpy="-1.5708 0 1.5708" />
+  </joint>
+
+  <joint name="usb_cam_front_to_husky" type="fixed">
+    <parent link="husky_link"/>
+    <child link="usb_cam_front"/>
+    <origin xyz="0.3 -.03 0.13" rpy="-1.5708 0 -1.5708" />
+  </joint>
+
+  <!-- ======= Leica Prism ======= -->
+
+  <link name="leica"> <!-- CAM0 is left camera (-x direction) -->
+    <visual>
+      <geometry>
+        <box size="0.03 0.03 0.03" /> <!-- actual camera size<box size=".15 .082 .0423" /> -->
+      </geometry>
+      <material name="front_green">
+	      <color rgba="0 0.3 .1 1" />
+      </material>
+    </visual>
+  </link>
+
+  <joint name="leica_to_bearing" type="fixed">
+    <parent link="husky_link"/>
+    <child link="leica"/>
+    <origin xyz="-0.235 0 0.75" rpy="0 0 0" />
+  </joint>
+
+  <!-- ======= Wheels ======= -->
+
+  <link name="front_left_wheel_link">
+    <visual>
+      <geometry>
+	      <cylinder radius="0.165" length="0.125" />
+      </geometry>
+      <material name="front_green">
+	      <color rgba="0 0.3 .1 1" />
+      </material>
+    </visual>
+  </link>
+
+  <link name="front_right_wheel_link">
+    <visual>
+      <geometry>
+	      <cylinder radius="0.165" length="0.125" />
+      </geometry>
+      <material name="front_green"/>
+    </visual>
+  </link>
+
+  <link name="rear_left_wheel_link">
+    <visual>
+      <geometry>
+	      <cylinder radius="0.165" length="0.125" />
+      </geometry>
+      <material name="back_red">
+	      <color rgba=".4 0 .1 1" />
+      </material>
+    </visual>
+  </link>
+
+  <link name="rear_right_wheel_link">
+    <visual>
+      <geometry>
+	      <cylinder radius="0.165" length="0.125" />
+      </geometry>
+      <material name="back_red">
+      </material>
+    </visual>
+  </link>
+
+  <joint name="husky_front_left_wheel" type="fixed">
+    <parent link="husky_link"/>
+    <child link="front_left_wheel_link"/>
+    <origin xyz="0.255 0.2825 -0.09" rpy="-1.57 0 0" />
+  </joint>
+
+  <joint name="husky_front_right_wheel" type="fixed">
+    <parent link="husky_link"/>
+    <child link="front_right_wheel_link"/>
+    <origin xyz="0.255 -0.2825 -0.09" rpy="1.57 0 0" />
+  </joint>
+
+  <joint name="husky_rear_left_wheel" type="fixed">
+    <parent link="husky_link"/>
+    <child link="rear_left_wheel_link"/>
+    <origin xyz="-0.255 0.2825 -0.09" rpy="-1.57 0 0" />
+  </joint>
+
+  <joint name="husky_rear_right_wheel" type="fixed">
+    <parent link="husky_link"/>
+    <child link="rear_right_wheel_link"/>
+    <origin xyz="-0.255 -0.2825 -0.09" rpy="1.57 0 0" />
+  </joint>
+
+</robot>

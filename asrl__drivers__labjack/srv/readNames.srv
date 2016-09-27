@@ -1,0 +1,5 @@
+string[] names
+int32 numFrames
+int32 seqNum
+---
+float32[] data

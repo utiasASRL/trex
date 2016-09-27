@@ -1,0 +1,5 @@
+int32[] addresses
+int32[] dataTypes
+int32 numFrames
+---
+float32[] data

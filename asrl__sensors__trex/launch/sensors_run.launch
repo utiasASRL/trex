@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<launch>
+  <node name="lj_register_sensors" pkg="asrl__sensors__trex" type="lj_register_sensors.py" />
+  <node name="lj_register_sensors_2" pkg="asrl__sensors__trex" type="lj_register_sensors_2.py" />
+  <node name="lj_register_sensors_spi" pkg="asrl__sensors__trex" type="lj_register_sensors_spi.py" />
+
+  <node name="lj_forceCell" pkg="asrl__sensors__trex" type="lj_forceCell.py" />
+  <node name="lj_angleEncoder" pkg="asrl__sensors__trex" type="lj_angleEncoder.py" />
+  <node name="lj_lengthEncoder" pkg="asrl__sensors__trex" type="lj_lengthEncoder.py" />
+  <node name="lj_motorEncoder" pkg="asrl__sensors__trex" type="lj_motorEncoder.py" />
+  <node name="lj_pitchPot" pkg="asrl__sensors__trex" type="lj_pitchPot.py" /> 
+  <node name="lj_magEncoder" pkg="asrl__sensors__trex" type="lj_magEncoder.py" />
+  <!--  <node name="inclinationPub_armMountedIMU" pkg="asrl__sensors__trex" type="inclinationPub_armMountedIMU.py" /> -->
+  <node name="inclinationPub_bodyMountedIMU" pkg="asrl__sensors__trex" type="inclinationPub_bodyMountedIMU.py" />
+  <node name="armGravityAnglePub" pkg="asrl__sensors__trex" type="armGravityAnglePub.py" />
+
+ <!-- COMMENT OUT -->
+</launch>

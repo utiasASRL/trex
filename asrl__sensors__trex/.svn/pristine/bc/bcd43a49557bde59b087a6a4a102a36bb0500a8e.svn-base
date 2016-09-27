@@ -1,0 +1,4 @@
+Header header
+
+float32 armGravityAngleRad
+float32 armGravityAngleDeg

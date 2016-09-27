@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<launch>
+  <node pkg="rviz" type="rviz" name="rviz"/>
+
+  <node name="image_rotater" pkg="image_rotate" type="image_rotate">
+
+    <!-- Remap Input-->
+    <remap from="image" to="/cam0/image_raw"/>
+    <!-- Remap Output-->
+    <remap from="rotated/image" to="/cam0/image_raw_rotated"/>
+
+    <param name="use_camera_info" value="true"/>
+
+    <param name="input_frame_id" value="cam0"/>
+    <param name="output_frame_id" value="cam0_rotated"/>
+    <!-- Flip by 180deg-->
+    <param name="target_frame_id" value="cam0"/>
+    <param name="target_x" value="0"/>
+    <param name="target_y" value="1"/>
+    <param name="target_z" value="0"/>
+
+    <param name="source_frame_id" value="cam0"/>
+    <param name="source_x" value="0"/>
+    <param name="source_y" value="-1"/>
+    <param name="source_z" value="0"/>
+  </node>
+
+  <!--node name="image_view1" pkg="image_view" type="image_view" respawn="false" output="screen">
+    <remap from="image" to="/cam0/image_raw_rotated"/>
+  </node>
+
+  <node name="image_view2" pkg="image_view" type="image_view" respawn="false" output="screen">
+    <remap from="image" to="/usb_cam/image_raw"/>
+  </node-->
+
+</launch>

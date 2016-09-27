@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<launch>
+  <!-- Launch XBOX Controller password bypassed -->
+  <node name="husky_xbox_node" pkg="asrl__robots__husky_trex" type="husky_xbox_setup.sh" />
+  <!-- TReX Platform -->
+  <include file="$(find asrl__robots__husky_trex)/launch/husky_gamepad_climber_fast.launch"/>
+  <include file="$(find asrl__robots__husky_trex)/launch/husky_batteryMonitor.launch"/>
+  <include file="$(find asrl__drivers__labjack)/launch/labjack_run.launch"/>
+  <include file="$(find asrl__sensors__trex)/launch/sensors_run.launch"/>
+  <include file="$(find asrl__control__tether_management)/launch/tether_management.launch"/>
+</launch>

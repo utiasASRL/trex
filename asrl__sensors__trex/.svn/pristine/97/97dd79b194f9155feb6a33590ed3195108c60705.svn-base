@@ -1,0 +1,213 @@
+#!/usr/bin/env python
+
+#Zettlex Angle Encoder (uses SPI communication protocal)
+
+import rospy
+from std_msgs.msg import String
+from labjack import ljm
+from asrl__sensors__trex.msg import *
+from asrl__sensors__trex.srv import *
+from asrl__control__tether_management.msg import *
+from asrl__drivers__labjack.msg import *
+from asrl__drivers__labjack.srv import *
+import numpy
+
+### NEW CODE : kcu
+import sys
+import os.path
+sys.path.append(
+    os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
+from utils.lj_messageFreq import *
+from utils.lj_sensor_buffer import *
+import utils.lj_logger as lj_logger
+from utils.lj_logger import *
+import utils.globalConfigData as globalConfigData
+
+# SET VARIABLES
+angleScale = 0.0054932 # 0.0054932 deg/bit //  65,536 counts/rev
+angleOffset = 225 # offset of arm from vehicle zero
+bytePosition = 31
+numBits = 1
+syncMask = 0xFFFFFFFFFFFF >> 48-numBits
+zeroPointDefaultFlagMask = 0x000100000000
+postionMask = 0x000080000000
+degCalibrated = 0
+sensorValue = 0
+syncFlag = 0
+positionValid = 0
+zeroPointDefaultFlag = 0
+pitchAngle = 0
+pitchCalibrated = 0
+
+### NEW CODE : kcu
+logging = TRexLabJackLogger("/tmp/trexLJLogs/lj_angleEncoder/lj_angleEncoder_msgFreq_log.txt")
+start_date_time = datetime.now()
+numMsgCt = 0
+
+def requestAngleFromLabJack():
+	global start_date_time, numMsgCt
+	rospy.wait_for_service('labjack_interface_node/read_SPI')
+	try:
+		readSPIFunction = rospy.ServiceProxy('labjack_interface_node/read_SPI', readSPI)
+		request = readSPIRequest() #try ReadSPIRequest() also
+		request.MISO_PORT = 0 # Data A Output (SPI)
+		request.MOSI_PORT = 21 # Data B Not Connected
+		request.CLKA_PORT = 1 # Clock A
+		request.CLKB_PORT = 1000 # Clock B > 2.5V (DAC)
+		request.CHIP_PORT = 22 # Chipset Not Connected
+		request.LOGIC_LEVEL = 2.5 # 2.5V Logic Level (1/2 the operating voltage)
+		request.SPI_FREQ = 65497 # Frequency = 1*10^9 / (175*(65536-SpeedThrottle) + 1020) / valid value 1:65536
+		request.SPI_MODE = 1 #Bit 1 = CPOL, Bit 0 = CPHA. 0 = 0/0 = b00, 1 = 0/1 = b01, 2 = 1/0 = b10, 3 = 1/1 = b11
+		request.SPI_OPT = 0 # Option for CS [DOES NOT CHANGE]
+		request.SPI_GO = 1 # Starts the SPI communication [DOES NOT CHANGE]
+		request.NUM_BYTES = 6 # Number of Bytes in Message
+		request.TX_MSG = [0, 0, 0, 0, 0, 0] # initialize TX with dummy "zero" message
+
+		response = readSPIFunction(request)
+
+		### NEW CODE : kcu
+		current_date = datetime.now()
+		check = current_date - start_date_time  # gives you a timedelta
+		numMsgCt += 1
+		if check >= timedelta(seconds=1):
+			if globalConfigData.print_time:
+				print str("Time : "), str(start_date_time), str(", Num of Msgs : "), str(
+					numMsgCt), ", response.data : ", response.byteRead
+			start_date_time = datetime.now()
+			numMsgCt = 0
+
+		dataRead = map(int, response.byteRead)
+		dataRead = ''.join('{:02x}'.format(x) for x in dataRead)
+		syncFlag = int(dataRead,16) >> bytePosition-1;
+		syncFlag = syncFlag & syncMask;
+		positionValid = int(dataRead,16) & postionMask
+		positionValid = positionValid >> 31
+		zeroPointDefaultFlag = int(dataRead,16) & zeroPointDefaultFlagMask
+		zeroPointDefaultFlag = zeroPointDefaultFlag >> 32
+		sensorValue = int(dataRead,16) & 0x00001FFFFFFF
+		sensorValue = sensorValue >> 9
+		degree = -1*((sensorValue * angleScale) - angleOffset) #multipled by -1 in order to correct direction in urdf
+		#print(degree)
+		if degree < 0.0:
+			degCalibrated = 360.0 + degree
+		else:
+			degCalibrated = degree
+		return (degCalibrated, sensorValue, syncFlag, positionValid, zeroPointDefaultFlag)
+	except rospy.ServiceException, e:
+		print('Service Call Failed: [%s]' % e)
+
+# Look into : change to service instead of pub/sub? Could lose msg?
+### NEW CODE : kcu
+def intermediateNodeResponse(response):
+	global secsLast, turnsLast, logging, start_date_time, numMsgCt
+	try:
+		t = rospy.Time.now()
+		secs = t.to_sec()
+		current_date = datetime.now()
+		check = current_date - start_date_time  # gives you a timedelta
+		numMsgCt += 1
+		if check >= timedelta(seconds=1):
+			strResMsgFreq = str("Time : ") + str(start_date_time) + str(", Num of Msgs : ") + str(
+				numMsgCt) + ", response.byteRead : " + str(response.byteRead)
+			logging.info(strResMsgFreq)
+			if globalConfigData.print_time:
+				print str("Time : "), str(start_date_time), str(", Num of Msgs : "), str(numMsgCt), ", response.byteRSead : ", response.byteRead
+			start_date_time = datetime.now()
+			numMsgCt = 0
+
+		dataRead = map(int, response.byteRead)
+		dataRead = ''.join('{:02x}'.format(x) for x in dataRead)
+		syncFlag = int(dataRead, 16) >> bytePosition - 1;
+		syncFlag = syncFlag & syncMask;
+		positionValid = int(dataRead, 16) & postionMask
+		positionValid = positionValid >> 31
+		zeroPointDefaultFlag = int(dataRead, 16) & zeroPointDefaultFlagMask
+		zeroPointDefaultFlag = zeroPointDefaultFlag >> 32
+		sensorValue = int(dataRead, 16) & 0x00001FFFFFFF
+		sensorValue = sensorValue >> 9
+		degree = -1 * ((sensorValue * angleScale) - angleOffset)  # multipled by -1 in order to correct direction in urdf
+		# print(degree)
+		if degree < 0.0:
+			degCalibrated = 360.0 + degree
+		else:
+			degCalibrated = degree
+
+		angleMsg = angleEncoder()
+		angleMsg.Deg = degCalibrated  # angle
+		angleMsg.Raw = sensorValue  # sensorValue
+		angleMsg.Sync = syncFlag  # syncFlag
+		angleMsg.Valid = positionValid  # positionValid
+		angleMsg.Zero = zeroPointDefaultFlag  # zeroPointDefaultFlag
+		angleMsg.header.stamp = rospy.Time.now()
+		anglePub.publish(angleMsg)
+	except TypeError as exc:
+		print "Exception caught a Type Error : ", str(exc)
+		print "A likely reason is that : ticks = response.data[0], failed. The lj interface or lj interface callers might be down."
+	except rospy.ROSException as exc:
+		print "Exception caught a ROSException : ", str(exc)
+
+if __name__ == '__main__':
+	logging.info("lj_angleEncoder started")  ### NEW CODE : kcu
+
+	#ROS PARAMS
+	anglePub = rospy.Publisher('/tether_angle', angleEncoder, queue_size=10)
+	rospy.init_node('angleEncoderPub', anonymous=True)
+
+	########### NEW CODE CHANGES
+	if globalConfigData.use_new_code_version_spi:
+		print "New code Version"
+		try:
+			# Registar this subscriber w/ intermediate
+			rospy.wait_for_service('/register_lj_spi_sensor')
+			registerFunction = rospy.ServiceProxy('/register_lj_spi_sensor', registerLJSPISensor)
+			request = registerLJSPISensorRequest()
+			request.sensor_id = 'SPI_1'
+			request.num_of_frames = 1
+			request.topic_name = globalConfigData.angle_lji_caller_sub
+			request.first_registration = True
+			request.MISO_PORT = 0  # Data A Output (SPI)
+			request.MOSI_PORT = 21  # Data B Not Connected
+			request.CLKA_PORT = 1  # Clock A
+			request.CLKB_PORT = 1000  # Clock B > 2.5V (DAC)
+			request.CHIP_PORT = 22  # Chipset Not Connected
+			request.LOGIC_LEVEL = 2.5  # 2.5V Logic Level (1/2 the operating voltage)
+			request.SPI_FREQ = 65497  # Frequency = 1*10^9 / (175*(65536-SpeedThrottle) + 1020) / valid value 1:65536
+			request.SPI_MODE = 1  # Bit 1 = CPOL, Bit 0 = CPHA. 0 = 0/0 = b00, 1 = 0/1 = b01, 2 = 1/0 = b10, 3 = 1/1 = b11
+			request.SPI_OPT = 0  # Option for CS [DOES NOT CHANGE]
+			request.SPI_GO = 1  # Starts the SPI communication [DOES NOT CHANGE]
+			request.NUM_BYTES = 6  # Number of Bytes in Message
+			request.TX_MSG = [0, 0, 0, 0, 0, 0]  # initialize TX with dummy "zero" message
+			response = registerFunction(request)
+			# Setup subscriber for parsing data
+			intermediateRes = rospy.Subscriber(
+				globalConfigData.angle_lji_caller_sub, spiResponse, intermediateNodeResponse)
+			rospy.spin()
+		except rospy.ServiceException as exc:
+			print("Service did not process request: " + str(exc))
+		except rospy.exceptions.ROSException as exc:
+			print("ROSException : " + str(exc))
+		except rospy.ROSInterruptException: pass
+	else:
+		print "Old code Version"
+		r = rospy.Rate(globalConfigData.loop_hz) # 10hz
+		while not rospy.is_shutdown():
+			try:
+				data = requestAngleFromLabJack()
+				angleMsg = angleEncoder()
+				angleMsg.Deg = data[0] # angle
+				angleMsg.Raw = data[1] # sensorValue
+				angleMsg.Sync = data[2] # syncFlag
+				angleMsg.Valid = data[3] # positionValid
+				angleMsg.Zero = data[4] # zeroPointDefaultFlag
+				angleMsg.header.stamp = rospy.Time.now()
+				anglePub.publish(angleMsg)
+				r.sleep()
+				#print('angle: [%0.2f]' % (data[0]))
+			except rospy.ROSInterruptException: pass
+			except TypeError as exc:
+				print "Exception caught a Type Error : ", str(exc)
+				print "A likely reason is that : ticks = data[NUM], failed. The lj interface or lj interface callers might be down."
+			except KeyboardInterrupt:
+				print "Keyboard Interrupt"
+			except rospy.ROSException as exc:
+				print "Exception caught a ROSException : ", str(exc)

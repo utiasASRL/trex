@@ -1,0 +1,80 @@
+#!/usr/bin/env python
+
+import rospy
+from std_msgs.msg import String, Empty
+from sensor_msgs.msg import Joy
+from asrl__sensors__trex.msg import *
+from asrl__control__tether_management.msg import *
+from asrl__drivers__labjack.msg import *
+from asrl__drivers__labjack.srv import *
+
+tensionMode = bool(0)
+previousSwitchValue = 0
+# resetValue = 0
+
+# Mapping INPUT to desired OUTPUT range
+def scale(val, src, dst):
+	return ((val - src[0]) / (src[1]-src[0])) * (dst[1]-dst[0]) + dst[0]
+
+def callback(data):
+	print('got joy message')
+	global tensionMode,previousSwitchValue,pub,controlSwitchPub,setSpoolZeroPub
+
+	controlMessage = motorCommand()
+	tetherCommand = data.axes[1]
+	deadmanButton = data.buttons[0] or data.buttons[1]
+	tensionModeSwitch = data.buttons[3]
+	buttonBack = data.buttons[6]
+	buttonStart = data.buttons[7]
+	
+	# rising edge of switch
+	if tensionModeSwitch == 1 and previousSwitchValue == 0:
+		if tensionMode == 0:
+			tensionMode = 1 # set to 1, else set to zero to turn off auto-tension
+		else:
+			tensionMode = 0
+	
+	if buttonBack == 1 and buttonStart == 1:
+		setSpoolZeroPub.publish(Empty())
+		print('reset spool: activated')
+		
+	
+	previousSwitchValue = tensionModeSwitch
+	print('tension Mode: %i' % tensionMode)
+	controlMessage.tensionMode = tensionMode
+	if deadmanButton == 0:
+		return
+
+	print('deadman pressed\n')
+	## manual tether control
+	if tensionMode == 0:
+		if abs(tetherCommand) < 0.1:
+			return
+
+		if tetherCommand < 0 :
+			controlMessage.motorDir = 0 #CW Reel In
+			controlMessage.desiredVoltage = scale(tetherCommand, (-1.0,0.0),(5.0,0.0))
+		else :
+			controlMessage.motorDir = 1	#CCW Pay Out
+			controlMessage.desiredVoltage = scale(tetherCommand, (0.0,1.0),(0.0,5.0))
+		print('publishing message!\n')
+		controlMessage.header.stamp = rospy.Time.now()
+		pub.publish(controlMessage)
+	else:
+		controlSwitchPub.publish(Empty())
+		print('tension mode: activated')
+
+
+def joyControl():
+	global pub,controlSwitchPub,setSpoolZeroPub
+	pub = rospy.Publisher('/motorControlInterface/read_motorCommand', motorCommand, queue_size=10)	
+	controlSwitchPub = rospy.Publisher('/joy_handoff', Empty, queue_size=10)
+	setSpoolZeroPub = rospy.Publisher('/reset_spool', Empty, queue_size=10)
+	rospy.Subscriber("joy", Joy, callback)
+	rospy.init_node('joyControl', anonymous=True)
+	rospy.spin()
+  
+if __name__ == '__main__':
+	try:
+		joyControl()
+	except rospy.ROSInterruptException: pass

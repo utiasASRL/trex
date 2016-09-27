@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<launch>
+  <node name="motorControlInterface" pkg="asrl__control__tether_management" type="lj_motorControl_basic.py" />
+  <node name="joyMotorCommand" pkg="asrl__control__tether_management" type="joyMotorCommand.py" />
+  <!-- Optional Controller -->
+  <node name="tensionMotorCommand_Max_FFFB" pkg="asrl__control__tether_management" type="tensionMotorCommand_Max_FFFB.py" />
+  <!-- Options: SelectType (combines flat and assitive simple) Assistive, AssistiveSimple, Flatground, Smart, Max* (Feedforward+Feedback)  (*normally used) -->
+</launch>

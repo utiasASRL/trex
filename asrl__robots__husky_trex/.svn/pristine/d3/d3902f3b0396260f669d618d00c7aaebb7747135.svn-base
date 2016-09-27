@@ -1,0 +1,6 @@
+%YAML:1.0
+TargetLinearSpeed:      [0.3,-0.3]
+HeadingErrorGain:       [0.75, 0.75]
+LateralErrorGain:       [0.1, 0.1]
+SaturationLimit:        [1.5, 1.5]
+LookAheadDistance:      [0.75, 0.75]

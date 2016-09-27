@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<launch>
+  	<!-- Directory where the bags will be recorded -->
+	<arg name="bag_dir" value="/home/asrl/trex"/>
+
+  	<!-- Directory where the bags will be recorded -->
+	<arg name="exp_dir" value="rosbags"/>
+
+  	<!-- Max size of each bag file, will split into multiple files at this size (MB) -->
+	<arg name="split_size" value="10240"/>
+	
+  	<!-- Rosbag args for the sensor recording -->
+    <arg name="sensors_rosbag_args" value="-o $(arg bag_dir)/$(arg exp_dir)/sensors --split --size=$(arg split_size) /scan /cam0/calibration /cam0/camera_info /cam0/image_raw /cam1/calibration /cam1/camera_info /cam1/image_raw /usb_cam_back/camera_info /usb_cam_back/image_raw /usb_cam_front/camera_info /usb_cam_front/image_raw /imu0 /cust_imu0 /tether_angle /tether_length /tether_pitch /tether_tension /mag_encoder /motor_encoder /tf /tf_static /joint_states /vehicle/in/twist /vehicle/out/odometry /leica/position"/>
+
+  	<!-- Rosbag args for camera (rectified) message recording -->
+    <!--arg name="cameras_rosbag_args" value="-o $(arg bag_dir)/$(arg exp_dir)/sensors -split -size=$(arg split_size) /scan /camera/cam0/calibration /camera/cam0/camera_info /camera/cam0/image_raw /camera/cam0/image_rect /camera/cam1/calibration /camera/cam1/camera_info /camera/cam1/image_raw /camera/cam0/image_rect /camera/cust_imu0 /camera/imu0 /tether_angle /tether_length /tether_pitch /tether_tension /mag_encoder /motor_encoder /tf /tf_static /joint_states /vehicle/in/twist /vehicle/out/odometry /leica/position"/-->
+
+  	<!-- Rosbag args for the misc message recording -->
+    <arg name="misc_rosbag_args" value="-o $(arg bag_dir)/$(arg exp_dir)/misc --split --size=$(arg split_size)  /select_control /tensionCommand /time_host /joy /diagnostics /rosout /rosout_agg /vehicle/out/vehicle_status /clearpath/announce/robots /clearpath/robots/vehicle/cmd_freq /clearpath/robots/vehicle/cmd_vel /clearpath/robots/vehicle/data/differential_output /clearpath/robots/vehicle/data/differential_speed /clearpath/robots/vehicle/data/encoders /clearpath/robots/vehicle/data/power_status /clearpath/robots/vehicle/data/safety_status /clearpath/robots/vehicle/data/system_status /clearpath/robots/vehicle/robot"/>
+
+  	<!-- Record the rosbags -->
+	<node pkg ="rosbag" type="record" name="sensors_recorder" output="screen" args="$(arg sensors_rosbag_args)"/>
+	<!--node pkg ="rosbag" type="record" name="cameras_recorder" output="screen" args="$(arg cameras_rosbag_args)"/-->
+	<node pkg ="rosbag" type="record" name="misc_recorder" output="screen" args="$(arg misc_rosbag_args)"/>
+
+</launch>
+

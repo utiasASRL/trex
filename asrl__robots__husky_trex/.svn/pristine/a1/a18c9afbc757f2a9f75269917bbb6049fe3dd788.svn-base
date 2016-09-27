@@ -1,0 +1,9 @@
+%YAML:1.0
+
+%ILC Calibrations
+TargetLinearSpeed:      [0.25,  0.4]
+HeadingErrorGain:       [0.75, 0.75]
+LateralErrorGain:       [0.3,  0.3]
+SaturationLimit:        [2.0, 2.0]
+LookAheadDistance:      [0.75, 0.75]
+AngularLookAhead:	[0.3, 0.3]

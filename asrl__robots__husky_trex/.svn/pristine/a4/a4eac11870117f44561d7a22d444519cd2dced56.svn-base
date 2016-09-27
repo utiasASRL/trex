@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<launch>
+  <!-- VI_Sensor // params must be set before calling node!-->
+  <param name="camRate" type="int" value="10" />
+  <param name="imuRate" type="int" value="100" />
+  <node name="visensor_node" pkg="visensor_node" type="visensor_node"/>
+
+  <!-- Web Camera -->
+  <node name="usb_cam_back" pkg="usb_cam" type="usb_cam_node" output="screen" >
+    <param name="video_device" value="/dev/video0" />
+    <param name="image_width" value="640" />
+    <param name="image_height" value="480" />
+    <param name="framerate" value="10"/>
+    <param name="pixel_format" value="yuyv" />
+    <param name="camera_frame_id" value="usb_cam_back" />
+    <param name="io_method" value="mmap"/>
+  </node>
+
+  <!-- Web Camera -->
+  <node name="usb_cam_front" pkg="usb_cam" type="usb_cam_node" output="screen" >
+    <param name="video_device" value="/dev/video1" />
+    <param name="image_width" value="640" />
+    <param name="image_height" value="480" />
+    <param name="framerate" value="10"/>
+    <param name="pixel_format" value="yuyv" />
+    <param name="camera_frame_id" value="usb_cam_front" />
+    <param name="io_method" value="mmap"/>
+  </node>
+
+  <!--<node name="inclinationPub" pkg="asrl__robots__climber" type="inclinationPub.py" />-->
+  <!-- SICK Lidar -->
+  <include file="$(find asrl__lasers__sicklms1xx)/launch/LMS1xx.launch"/>
+  <!-- FOVIS VO -->
+  <!-- <include file="$(find fovis_ros)/launch/fovis_stereo.launch"/>-->
+</launch>

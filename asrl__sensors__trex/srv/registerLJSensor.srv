@@ -1,0 +1,6 @@
+string sensor_id
+int32 num_of_frames
+string topic_name
+
+bool first_registration
+---

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<launch>
+  <node name="batteryMonitor" pkg="asrl__robots__husky_trex" type="batteryMonitor.py" output="screen">
+    <param name="warn_limit" value="24.0" />
+    <param name="error_limit" value="23.5" />
+  </node>
+</launch>

@@ -1,0 +1,9 @@
+=== Overview ===
+Wrapper to provide the standard ASRL vehicle interface to the Clearpath Horizon protocol with the climber package.
+
+=== Key Files ===
+
+
+=== Additional Notes ===
+* The Clearpath Horizon protocol may time out on startup. This can be avoided by allowing additional timeouts for the initialization in the Horizon protocol code.
+

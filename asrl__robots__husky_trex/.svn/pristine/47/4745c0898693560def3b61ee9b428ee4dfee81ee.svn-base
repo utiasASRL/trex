@@ -1,0 +1,103 @@
+Background\ ColorR=0
+Background\ ColorG=0
+Background\ ColorB=0
+Fixed\ Frame=/path_base_link
+Target\ Frame=/camera
+Graph\ labels.Enabled=1
+Graph\ labels.Marker\ Topic=/graph_visualization/out/visualization/graph_label_marker
+Grid.Alpha=0.5
+Grid.Cell\ Size=1
+Grid.ColorR=0.5
+Grid.ColorG=0.5
+Grid.ColorB=0.5
+Grid.Enabled=1
+Grid.Line\ Style=0
+Grid.Line\ Width=0.03
+Grid.Normal\ Cell\ Count=0
+Grid.OffsetX=0
+Grid.OffsetY=0
+Grid.OffsetZ=0
+Grid.Plane=0
+Grid.Plane\ Cell\ Count=200
+Grid.Reference\ Frame=<Fixed Frame>
+MarkerArray.Enabled=1
+MarkerArray.Marker\ Array\ Topic=/path_tracker/visualization_marker_array
+MarkerArray2.Enabled=1
+MarkerArray2.Marker\ Array\ Topic=/StereoNavigation/map/graphnav/out/visualization_marker_array
+Path\ plan.Enabled=1
+Path\ plan.Marker\ Topic=/berns_rrt/out/visualization/path_marker
+Robot\ Model.Alpha=1
+Robot\ Model.Collision\ Enabled=0
+Robot\ Model.Enabled=1
+Robot\ Model.Robot\ Description=/robot_description
+Robot\ Model.TF\ Prefix=
+Robot\ Model.Update\ Interval=0
+Robot\ Model.Visual\ Enabled=1
+Robot\:\ Robot\ Model\ Link\ body_linkShow\ Axes=0
+Robot\:\ Robot\ Model\ Link\ body_linkShow\ Trail=0
+Robot\:\ Robot\ Model\ Link\ front_left_wheel_linkShow\ Axes=0
+Robot\:\ Robot\ Model\ Link\ front_left_wheel_linkShow\ Trail=0
+Robot\:\ Robot\ Model\ Link\ front_right_wheel_linkShow\ Axes=0
+Robot\:\ Robot\ Model\ Link\ front_right_wheel_linkShow\ Trail=0
+Robot\:\ Robot\ Model\ Link\ rear_left_wheel_linkShow\ Axes=0
+Robot\:\ Robot\ Model\ Link\ rear_left_wheel_linkShow\ Trail=0
+Robot\:\ Robot\ Model\ Link\ rear_right_wheel_linkShow\ Axes=0
+Robot\:\ Robot\ Model\ Link\ rear_right_wheel_linkShow\ Trail=0
+Robot\:\ Robot\ Model\ Link\ stereo_camera_linkShow\ Axes=0
+Robot\:\ Robot\ Model\ Link\ stereo_camera_linkShow\ Trail=0
+Robot\:\ Robot\ Model\ Link\ stereo_mast_linkShow\ Axes=0
+Robot\:\ Robot\ Model\ Link\ stereo_mast_linkShow\ Trail=0
+TF.All\ Enabled=0
+TF.Enabled=1
+TF.Frame\ Timeout=15
+TF.Marker\ Scale=1
+TF.Show\ Arrows=0
+TF.Show\ Axes=1
+TF.Show\ Names=1
+TF.Update\ Interval=0
+Tool\ 2D\ Nav\ GoalTopic=goal
+Tool\ 2D\ Pose\ EstimateTopic=initialpose
+Camera\ Type=rviz::OrbitViewController
+Camera\ Config=0.465398 2.96538 19.9725 0 0 0
+Property\ Grid\ State=selection=;expanded=TF./body_link/body_link,TF./front_left_wheel_link/front_left_wheel_link,TF./front_right_wheel_link/front_right_wheel_link,TF./rear_left_wheel_link/rear_left_wheel_link,TF./rear_right_wheel_link/rear_right_wheel_link,TF./stereo_camera_link/stereo_camera_link,TF./stereo_mast_link/stereo_mast_link,TF./vehicle_base_link/vehicle_base_link,TF./vehicle_odom/vehicle_odom,TF./camera/camera,TF./path/path,TF./path_base_link/path_base_link,TF.Enabled.TF.Tree,TF./vehicle_base_linkTree/vehicle_base_link,TF./vehicle_odomTree/vehicle_odom,TF./body_linkTree/body_link,TF./front_left_wheel_linkTree/front_left_wheel_link,TF./front_right_wheel_linkTree/front_right_wheel_link,TF./rear_left_wheel_linkTree/rear_left_wheel_link,TF./rear_right_wheel_linkTree/rear_right_wheel_link,TF./stereo_mast_linkTree/stereo_mast_link,TF./stereo_camera_linkTree/stereo_camera_link,TF./cameraTree/camera,TF./pathTree/path,TF./path_base_linkTree/path_base_link,Path plan.Enabled.Path plan.Namespaces,Graph labels.Enabled.Graph labels.Namespaces,MarkerArray.Enabled.MarkerArray.Namespaces,MarkerArray2.Enabled.MarkerArray2.Namespaces;scrollpos=0,0;splitterpos=151,319;ispageselected=1
+[Display0]
+Name=TF
+Package=rviz
+ClassName=rviz::TFDisplay
+[Display1]
+Name=Grid
+Package=rviz
+ClassName=rviz::GridDisplay
+[Display2]
+Name=Path plan
+Package=rviz
+ClassName=rviz::MarkerDisplay
+[Display3]
+Name=Graph labels
+Package=rviz
+ClassName=rviz::MarkerDisplay
+[Display4]
+Name=Robot Model
+Package=rviz
+ClassName=rviz::RobotModelDisplay
+[Display5]
+Name=MarkerArray
+Package=rviz
+ClassName=rviz::MarkerArrayDisplay
+[Display6]
+Name=MarkerArray2
+Package=rviz
+ClassName=rviz::MarkerArrayDisplay
+[TF.]
+body_linkEnabled=1
+cameraEnabled=1
+front_left_wheel_linkEnabled=1
+front_right_wheel_linkEnabled=1
+pathEnabled=1
+path_base_linkEnabled=1
+rear_left_wheel_linkEnabled=1
+rear_right_wheel_linkEnabled=1
+stereo_camera_linkEnabled=1
+stereo_mast_linkEnabled=1
+vehicle_base_linkEnabled=1
+vehicle_odomEnabled=1
